@@ -14,6 +14,7 @@
 # limitations under the License.
 from __future__ import absolute_import
 import requests
+import requests.auth
 from collections import namedtuple
 import httplib2
 import httplib
@@ -24,6 +25,7 @@ except ImportError:
     """MoveAlong Along, We assume we are testing"""
     # Todo Add some error checking to the collectd.* use cases.
 
+# todo more logging
 VERBOSE_LOGGING = False
 COLLECTD_PLUGIN_NAMESPACE = "aurora-scheduler"
 
@@ -38,7 +40,7 @@ RACK_ID = "[a-zA-Z-_]+"
 Stat = namedtuple('Stat', ('type', 'name'))
 
 CONFIGS = []
-
+# Todo will need to access that the metrics all have the right value types ie gauge, counter etc
 METRICS = {
     # Async Tasks
     "async_tasks_completed": Stat("counter", "async_tasks_completed"),
@@ -654,7 +656,8 @@ DYNAMIC_STATS = ['sla_' + TASK_ID, 'tasks_FAILED_' + TASK_ID, 'tasks_lost_rack_'
 def configure_callback(conf):
     host = None
     port = None
-    auth = None
+    username = None
+    password = None
     instance = None
     path = None
 
@@ -666,8 +669,6 @@ def configure_callback(conf):
             host = val
         elif key == 'port':
             port = int(val)
-        elif key == 'auth':
-            auth = val
         elif key == 'verbose':
             global VERBOSE_LOGGING
             VERBOSE_LOGGING = bool(node.values[0]) or VERBOSE_LOGGING
@@ -675,6 +676,10 @@ def configure_callback(conf):
             instance = val
         elif key == 'path':
             path = val
+        elif key == 'username':
+            username = val
+        elif key == 'password':
+            password = val
         else:
             collectd.warning('%s plugin: Unknown config key: %s.'.format(COLLECTD_PLUGIN_NAMESPACE, key))
             continue
@@ -683,7 +688,8 @@ def configure_callback(conf):
         'Configured with host=%s, port=%s, instance name=%s, using_auth=%s' % (host, port, instance, auth != None),
         verbose=True)
 
-    CONFIGS.append({'host': host, 'port': port, 'auth': auth, 'instance': instance, 'path': path})
+    CONFIGS.append(
+        {'host': host, 'port': port, 'username': username, 'password': password, 'instance': instance, 'path': path})
 
 
 def get_metric(t):
@@ -742,11 +748,14 @@ def dispatch_stat(value, name, type, plugin_instance=None, type_instance=None):
     val.dispatch()
 
 
-def fetch_info(host, port, path="/vars", scheme="http"):
+def fetch_info(host, port, path="/vars", scheme="http", username=None, password=None):
     result_set = {}
+    auth = None
+    if username and password:
+        auth = requests.auth.HTTPBasicAuth(username=username, password=password)
     REQUEST_URI = "{scheme}://{host}:{port}{path}".format(scheme=scheme, host=host, path=path, port=port)
     try:
-        result = requests.get(REQUEST_URI, headers={'accept': 'application/text'})
+        result = requests.get(REQUEST_URI, headers={'accept': 'application/text'}, auth=auth)
         print result.content
         for line in result.content.splitlines():
             if len(line) == 0:
@@ -801,6 +810,7 @@ try:
 except NameError, exc:
     if __name__ != '__main__':
         import sys
+
         sys.stderr.write(exc.message)
         sys.stderr.flush()
 
