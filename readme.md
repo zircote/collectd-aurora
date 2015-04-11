@@ -19,7 +19,6 @@ An attempt to collect(d) Apache Aurora metrics.
     Instance my1
     Host "my1.aurora.server.com"
     Port 8081
-    Scheme http
     Path /vars
     Verbose false
   </Module>
@@ -27,7 +26,6 @@ An attempt to collect(d) Apache Aurora metrics.
     Instance my2
     Host "my2.aurora.server.com"
     Port 8081
-    Scheme http
     Path /vars
     Verbose false
   </Module>
@@ -35,7 +33,7 @@ An attempt to collect(d) Apache Aurora metrics.
     Instance my3
     Host "my3.aurora.server.com"
     Port 8081
-    Scheme http
+    Ssl = true
     Path /vars
     Verbose false
   </Module>

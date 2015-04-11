@@ -18,6 +18,7 @@ import requests.auth
 from collections import namedtuple
 import httplib2
 import httplib
+import sys
 
 try:
     import collectd
@@ -576,6 +577,30 @@ METRICS = {
     "system_free_swap_mb": Stat("gauge", "system_free_swap_mb"),
     "system_load_avg": Stat("gauge", "system_load_avg"),
     # Task
+    "task_delivery_delay_SOURCE_MASTER_requests_per_sec": Stat("gauge", "task_delivery_delay_SOURCE_MASTER_requests_per_sec"),
+    "task_delivery_delay_SOURCE_MASTER_requests_micros_total": Stat("gauge", "task_delivery_delay_SOURCE_MASTER_requests_micros_total"),
+    "task_delivery_delay_SOURCE_MASTER_requests_micros_per_event": Stat("gauge", "task_delivery_delay_SOURCE_MASTER_requests_micros_per_event"),
+    "task_delivery_delay_SOURCE_MASTER_99_0_percentile": Stat("gauge", "task_delivery_delay_SOURCE_MASTER_99_0_percentile"),
+    "task_delivery_delay_SOURCE_MASTER_timeouts_per_sec": Stat("gauge", "task_delivery_delay_SOURCE_MASTER_timeouts_per_sec"),
+    "task_delivery_delay_SOURCE_MASTER_99_9_percentile": Stat("gauge", "task_delivery_delay_SOURCE_MASTER_99_9_percentile"),
+    "task_delivery_delay_SOURCE_MASTER_requests_events": Stat("gauge", "task_delivery_delay_SOURCE_MASTER_requests_events"),
+    "scheduler_thrift_replaceCronTemplate_events": Stat("gauge", "scheduler_thrift_replaceCronTemplate_events"),
+    "task_delivery_delay_SOURCE_MASTER_errors": Stat("gauge", "task_delivery_delay_SOURCE_MASTER_errors"),
+    "task_delivery_delay_SOURCE_MASTER_90_0_percentile": Stat("gauge", "task_delivery_delay_SOURCE_MASTER_90_0_percentile"),
+    "scheduler_thrift_replaceCronTemplate_nanos_total": Stat("gauge", "scheduler_thrift_replaceCronTemplate_nanos_total"),
+    "task_delivery_delay_SOURCE_MASTER_requests_micros_total_per_sec": Stat("gauge", "task_delivery_delay_SOURCE_MASTER_requests_micros_total_per_sec"),
+    "task_delivery_delay_SOURCE_MASTER_99_99_percentile": Stat("gauge", "task_delivery_delay_SOURCE_MASTER_99_99_percentile"),
+    "task_delivery_delay_SOURCE_MASTER_reconnects": Stat("gauge", "task_delivery_delay_SOURCE_MASTER_reconnects"),
+    "task_delivery_delay_SOURCE_MASTER_error_rate": Stat("gauge", "task_delivery_delay_SOURCE_MASTER_error_rate"),
+    "scheduler_thrift_replaceCronTemplate_nanos_total_per_sec": Stat("gauge", "scheduler_thrift_replaceCronTemplate_nanos_total_per_sec"),
+    "task_delivery_delay_SOURCE_MASTER_50_0_percentile": Stat("gauge", "task_delivery_delay_SOURCE_MASTER_50_0_percentile"),
+    "task_delivery_delay_SOURCE_MASTER_10_0_percentile": Stat("gauge", "task_delivery_delay_SOURCE_MASTER_10_0_percentile"),
+    "task_delivery_delay_SOURCE_MASTER_timeouts": Stat("gauge", "task_delivery_delay_SOURCE_MASTER_timeouts"),
+    "task_delivery_delay_SOURCE_MASTER_timeout_rate": Stat("gauge", "task_delivery_delay_SOURCE_MASTER_timeout_rate"),
+    "task_delivery_delay_SOURCE_MASTER_errors_per_sec": Stat("gauge", "task_delivery_delay_SOURCE_MASTER_errors_per_sec"),
+    "scheduler_thrift_replaceCronTemplate_nanos_per_event": Stat("gauge", "scheduler_thrift_replaceCronTemplate_nanos_per_event"),
+    "scheduler_thrift_replaceCronTemplate_events_per_sec": Stat("gauge", "scheduler_thrift_replaceCronTemplate_events_per_sec"),
+    "task_delivery_delay_SOURCE_MASTER_requests_events_per_sec": Stat("gauge", "task_delivery_delay_SOURCE_MASTER_requests_events_per_sec"),
     "task_config_keys_backfilled": Stat("gauge", "task_config_keys_backfilled"),
     "task_exit_REASON_COMMAND_EXECUTOR_FAILED": Stat("counter", "task_exit_REASON_COMMAND_EXECUTOR_FAILED"),
     "task_exit_REASON_EXECUTOR_TERMINATED": Stat("counter", "task_exit_REASON_EXECUTOR_TERMINATED"),
@@ -659,7 +684,8 @@ def configure_callback(conf):
     username = None
     password = None
     instance = None
-    path = None
+    path = 'vars'
+    scheme = 'http'
 
     for node in conf.children:
         key = node.key.lower()
@@ -680,16 +706,19 @@ def configure_callback(conf):
             username = val
         elif key == 'password':
             password = val
+        elif key == 'ssl':
+            scheme = 'https' if bool(node.values[0]) else 'http'
         else:
             collectd.warning('%s plugin: Unknown config key: %s.'.format(COLLECTD_PLUGIN_NAMESPACE, key))
             continue
 
     log_message(
-        'Configured with host=%s, port=%s, instance name=%s, using_auth=%s' % (host, port, instance, auth != None),
+        'Configured with host=%s, port=%s, instance name=%s, using_auth=%s' % (host, port, instance, username != None),
         verbose=True)
 
     CONFIGS.append(
-        {'host': host, 'port': port, 'username': username, 'password': password, 'instance': instance, 'path': path})
+        {'host': host, 'port': port, 'username': username, 'password': password, 'instance': instance, 'path': path,
+         'scheme': scheme})
 
 
 def get_metric(t):
@@ -701,7 +730,7 @@ def get_metric(t):
         if 'sla_' in t[0:4]:
             for k, v in DYNAMIC_STAT_LIST['sla_'].iteritems():
                 if k in t[4:]:
-                    v = Stat('State', (v.type, 'sla_' + t[4:].replace(k, '') + v.name))
+                    v = Stat('State', (v.type, t))
             type_instance = 'sla'
         elif 'tasks_FAILED_' in t:
             v = DYNAMIC_STAT_LIST['tasks_']['tasks_FAILED_']
@@ -728,41 +757,39 @@ def get_metrics(conf):
         plugin_instance = '{host}:{port}'.format(host=conf['host'], port=conf['port'])
 
     results = fetch_info(scheme=conf['scheme'], host=conf['host'], path=conf['path'], port=conf['port'])
-    for key, value in results.itervalues():
+    for key, value in results.iteritems():
         metric, type_instance = get_metric(key)
         if metric is not None:
             dispatch_stat(value, metric.name, metric.type, plugin_instance, type_instance)
 
 
 def dispatch_stat(value, name, type, plugin_instance=None, type_instance=None):
-    if value is None:
-        collectd.warning('%s plugin: Value not found for %s'.format(COLLECTD_PLUGIN_NAMESPACE, name))
-        return
-    log_message('%s plugin: sending value[%s]: %s=%s' % (COLLECTD_PLUGIN_NAMESPACE, type, name, value), verbose=True)
-
-    val = collectd.Values(plugin=COLLECTD_PLUGIN_NAMESPACE)
-    val.type = type
-    val.type_instance = type_instance
-    val.plugin_instance = plugin_instance
-    val.values = [value]
-    val.dispatch()
+    try:
+        if value is None:
+            collectd.warning('%s plugin: Value not found for %s'.format(COLLECTD_PLUGIN_NAMESPACE, name))
+            return
+        log_message('%s plugin: sending value[%s]: %s=%s' % (COLLECTD_PLUGIN_NAMESPACE, type, name, value),
+                    verbose=True)
+        val = collectd.Values(plugin=COLLECTD_PLUGIN_NAMESPACE)
+        val.type = type
+        val.type_instance = type_instance
+        val.plugin_instance = plugin_instance
+        val.values = [value]
+        val.dispatch()
+    except NameError:
+        print {'value': value, 'name': name, 'metric_type': type, 'plugin_instance': plugin_instance,
+               'type_instance': type_instance}
 
 
 def fetch_info(host, port, path="/vars", scheme="http", username=None, password=None):
     result_set = {}
     auth = None
-    if username and password:
-        auth = requests.auth.HTTPBasicAuth(username=username, password=password)
-    REQUEST_URI = "{scheme}://{host}:{port}{path}".format(scheme=scheme, host=host, path=path, port=port)
     try:
-        result = requests.get(REQUEST_URI, headers={'accept': 'application/text'}, auth=auth)
-        print result.content
-        for line in result.content.splitlines():
-            if len(line) == 0:
-                continue
-            key, val = line.split(' ', 1)
-            result_set[key] = val
-        return result_set
+        if username and password:
+            auth = requests.auth.HTTPBasicAuth(username=username, password=password)
+        REQUEST_URI = "{scheme}://{host}:{port}{path}.json".format(scheme=scheme, host=host, path=path, port=port)
+        result = requests.get(REQUEST_URI, auth=auth)
+        return result.json()
     except RETRIABLE_EXCEPTIONS, exc:
         log_message(exc.message)
         return None
@@ -775,9 +802,15 @@ def log_message(msg, verbose=False):
     if verbose and not VERBOSE_LOGGING:
         return
     elif verbose and VERBOSE_LOGGING:
-        collectd.info('%s [verbose]: %s'.format(COLLECTD_PLUGIN_NAMESPACE, msg))
+        try:
+            collectd.info('%s [verbose]: %s'.format(COLLECTD_PLUGIN_NAMESPACE, msg))
+        except NameError:
+            sys.stderr.write('%s [verbose]: %s'.format(COLLECTD_PLUGIN_NAMESPACE, msg))
     else:
-        collectd.info(msg)
+        try:
+            collectd.info(msg)
+        except NameError:
+            sys.stderr.write(msg)
 
 
 def test_parserer():
@@ -814,5 +847,3 @@ except NameError, exc:
         sys.stderr.write(exc.message)
         sys.stderr.flush()
 
-if __name__ == "__main__":
-    test_parserer()
