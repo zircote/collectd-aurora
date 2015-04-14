@@ -147,10 +147,6 @@ METRICS = {
     "jvm_memory_non_heap_mb_committed": Stat("counter", "jvm_memory_non_heap_mb_committed"),
     "jvm_memory_non_heap_mb_max": Stat("gauge", "jvm_memory_non_heap_mb_max"),
     "jvm_memory_non_heap_mb_used": Stat("counter", "jvm_memory_non_heap_mb_used"),
-    "jvm_prop_java_class_version": Stat("gauge", "jvm_prop_java_class_version"),
-    "jvm_prop_java_specification_version": Stat("gauge", "jvm_prop_java_specification_version"),
-    "jvm_prop_java_vm_specification_version": Stat("gauge", "jvm_prop_java_vm_specification_version"),
-    "jvm_prop_user_dir": Stat("gauge", "jvm_prop_user_dir"),
     "jvm_threads_active": Stat("counter", "jvm_threads_active"),
     "jvm_threads_daemon": Stat("counter", "jvm_threads_daemon"),
     "jvm_threads_peak": Stat("counter", "jvm_threads_peak"),
@@ -570,7 +566,6 @@ METRICS = {
     "snapshot_create_nanos_total": Stat("counter", "snapshot_create_nanos_total"),
     "snapshot_create_nanos_total_per_sec": Stat("gauge", "snapshot_create_nanos_total_per_sec"),
     # Sys
-    "system_env_PWD": Stat("gauge", "system_env_PWD"),
     "system_env_SHLVL": Stat("gauge", "system_env_SHLVL"),
     "system_env_UPSTART_INSTANCE": Stat("gauge", "system_env_UPSTART_INSTANCE"),
     "system_free_physical_memory_mb": Stat("counter", "system_free_physical_memory_mb"),
