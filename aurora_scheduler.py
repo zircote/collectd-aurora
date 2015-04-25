@@ -763,6 +763,8 @@ def dispatch_stat(value, name, type, plugin_instance=None, type_instance=None):
         if value is None:
             collectd.warning('%s plugin: Value not found for %s'.format(COLLECTD_PLUGIN_NAMESPACE, name))
             return
+        if not type_instance:
+            type_instance = name
         log_message('%s plugin: sending value[%s]: %s=%s' % (COLLECTD_PLUGIN_NAMESPACE, type, name, value),
                     verbose=True)
         val = collectd.Values(plugin=COLLECTD_PLUGIN_NAMESPACE)
