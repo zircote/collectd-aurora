@@ -567,7 +567,6 @@ METRICS = {
     "snapshot_create_nanos_total_per_sec": Stat("gauge", "snapshot_create_nanos_total_per_sec"),
     # Sys
     "system_env_SHLVL": Stat("gauge", "system_env_SHLVL"),
-    "system_env_UPSTART_INSTANCE": Stat("gauge", "system_env_UPSTART_INSTANCE"),
     "system_free_physical_memory_mb": Stat("counter", "system_free_physical_memory_mb"),
     "system_free_swap_mb": Stat("gauge", "system_free_swap_mb"),
     "system_load_avg": Stat("gauge", "system_load_avg"),
