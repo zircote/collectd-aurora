@@ -688,7 +688,7 @@ def configure_callback(conf):
         if key == 'host':
             host = val
         elif key == 'port':
-            port = val
+            port = int(val)
         elif key == 'verbose':
             global VERBOSE_LOGGING
             VERBOSE_LOGGING = bool(node.values[0]) or VERBOSE_LOGGING
