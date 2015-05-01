@@ -747,8 +747,6 @@ def read_callback():
 
 def get_metrics(conf):
     plugin_instance = conf['instance']
-    if plugin_instance is None:
-        plugin_instance = '{host}:{port}'.format(host=conf['host'], port=conf['port'])
 
     results = fetch_info(scheme=conf['scheme'], host=conf['host'], path=conf['path'], port=conf['port'])
     for key, value in results.iteritems():
