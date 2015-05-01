@@ -646,7 +646,7 @@ METRICS = {
     "variable_scrape_micros_per_event": Stat("gauge", "variable_scrape_micros_per_event"),
     "variable_scrape_micros_total": Stat("counter", "variable_scrape_micros_total"),
     "variable_scrape_micros_total_per_sec": Stat("gauge", "variable_scrape_micros_total_per_sec"),
-}
+    }
 
 DYNAMIC_STAT_LIST = {
     "sla_": {
@@ -665,7 +665,7 @@ DYNAMIC_STAT_LIST = {
         "tasks_FAILED_": Stat("counter", "tasks_FAILED_" + TASK_ID),
         "tasks_LOST_": Stat("counter", "tasks_LOST_" + TASK_ID),
         "tasks_lost_rack_": Stat("counter", "tasks_lost_rack_" + RACK_ID),
-    }
+        }
 }
 
 DYNAMIC_STATS = ['sla_' + TASK_ID, 'tasks_FAILED_' + TASK_ID, 'tasks_lost_rack_' + RACK_ID,
@@ -747,8 +747,6 @@ def read_callback():
 
 def get_metrics(conf):
     plugin_instance = conf['instance']
-    if plugin_instance is None:
-        plugin_instance = '{host}:{port}'.format(host=conf['host'], port=conf['port'])
 
     results = fetch_info(scheme=conf['scheme'], host=conf['host'], path=conf['path'], port=conf['port'])
     for key, value in results.iteritems():
@@ -794,7 +792,7 @@ def fetch_info(host, port, path="/vars", scheme="http", username=None, password=
         return None
 
 
-def log_message(msg, verbose=False):
+def log_message(msg, verbose=True):
     if verbose and not VERBOSE_LOGGING:
         return
     elif verbose and VERBOSE_LOGGING:
@@ -842,4 +840,3 @@ except NameError, exc:
 
         sys.stderr.write(exc.message)
         sys.stderr.flush()
-
