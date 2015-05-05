@@ -646,7 +646,7 @@ METRICS = {
     "variable_scrape_micros_per_event": Stat("gauge", "variable_scrape_micros_per_event"),
     "variable_scrape_micros_total": Stat("counter", "variable_scrape_micros_total"),
     "variable_scrape_micros_total_per_sec": Stat("gauge", "variable_scrape_micros_total_per_sec"),
-    }
+}
 
 DYNAMIC_STAT_LIST = {
     "sla_": {
@@ -665,7 +665,7 @@ DYNAMIC_STAT_LIST = {
         "tasks_FAILED_": Stat("counter", "tasks_FAILED_" + TASK_ID),
         "tasks_LOST_": Stat("counter", "tasks_LOST_" + TASK_ID),
         "tasks_lost_rack_": Stat("counter", "tasks_lost_rack_" + RACK_ID),
-        }
+    }
 }
 
 DYNAMIC_STATS = ['sla_' + TASK_ID, 'tasks_FAILED_' + TASK_ID, 'tasks_lost_rack_' + RACK_ID,
@@ -708,7 +708,7 @@ def configure_callback(conf):
 
     log_message(
         'Configured with host=%s, port=%s, instance name=%s, using_auth=%s' % (host, port, instance, username != None),
-    verbose=True)
+        verbose=True)
 
     CONFIGS.append(
         {'host': host, 'port': port, 'username': username, 'password': password, 'instance': instance, 'path': path,
@@ -842,3 +842,4 @@ except NameError, exc:
 
         sys.stderr.write(exc.message)
         sys.stderr.flush()
+
