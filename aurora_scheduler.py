@@ -673,12 +673,12 @@ DYNAMIC_STATS = ['sla_' + TASK_ID, 'tasks_FAILED_' + TASK_ID, 'tasks_lost_rack_'
 
 
 def configure_callback(conf):
-    host = None
-    port = None
+    host = "localhost"
+    port = 8081
     username = None
     password = None
-    instance = None
-    path = 'vars'
+    instance = ""
+    path = '/vars'
     scheme = 'http'
 
     for node in conf.children:
