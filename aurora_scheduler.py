@@ -703,7 +703,7 @@ def configure_callback(conf):
         elif key == 'ssl':
             scheme = 'https' if bool(node.values[0]) else 'http'
         else:
-            collectd.warning('%s plugin: Unknown config key: %s.'.format(COLLECTD_PLUGIN_NAMESPACE, key))
+            collectd.warning('{} plugin: Unknown config key: {}.'.format(COLLECTD_PLUGIN_NAMESPACE, key))
             continue
 
     log_message(
@@ -829,7 +829,7 @@ def test_parserer():
     ]
     for t in fixture_data:
         metric, type_instance = get_metric(t)
-        assert type(metric) is Stat, "Assertion for metric '%s'" % metric
+        assert type(metric) is Stat, "Assertion for metric '{}'".format(metric)
         if 'sla_' in t[:4]:
             assert type_instance == 'sla'
 
