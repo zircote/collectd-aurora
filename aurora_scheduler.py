@@ -707,7 +707,8 @@ def configure_callback(conf):
             continue
 
     log_message(
-        'Configured with host=%s, port=%s, instance name=%s, using_auth=%s' % (host, port, instance, username != None),
+        'Configured with host={host}, port={port}, instance name={instance}, using_auth={auth}'.format(
+            host=host, port=port, instance=instance, auth=(username != None)),
         verbose=True)
 
     CONFIGS.append(
@@ -761,11 +762,11 @@ def get_metrics(conf):
 def dispatch_stat(value, name, type, plugin_instance=None, type_instance=None):
     try:
         if value is None:
-            collectd.warning('%s plugin: Value not found for %s'.format(COLLECTD_PLUGIN_NAMESPACE, name))
+            collectd.warning('{} plugin: Value not found for {}'.format(COLLECTD_PLUGIN_NAMESPACE, name))
             return
         if not type_instance:
             type_instance = name
-        log_message('%s plugin: sending value[%s]: %s=%s' % (COLLECTD_PLUGIN_NAMESPACE, type, name, value),verbose=True)
+        log_message('{} plugin: sending value[{}]: {}={}'.format(COLLECTD_PLUGIN_NAMESPACE, type, name, value),verbose=True)
         val = collectd.Values(plugin = COLLECTD_PLUGIN_NAMESPACE)
         val.type = type
         val.type_instance = type_instance
@@ -783,7 +784,8 @@ def fetch_info(host, port, path="/vars", scheme="http", username=None, password=
     try:
         if username and password:
             auth = requests.auth.HTTPBasicAuth(username=username, password=password)
-        REQUEST_URI = "{scheme}://{host}:{port}{path}.json".format(scheme=scheme, host=host, path=path, port=port)
+        REQUEST_URI = "{scheme}://{host}:{port}{path}.json".format(scheme=scheme,
+                        host=host, port=port, path=path)
         result = requests.get(REQUEST_URI, auth=auth)
         return result.json()
     except RETRIABLE_EXCEPTIONS, exc:
@@ -799,9 +801,9 @@ def log_message(msg, verbose=True):
         return
     elif verbose and VERBOSE_LOGGING:
         try:
-            collectd.info('aurora plugin [verbose]: %s' % msg)
+            collectd.info('aurora plugin [verbose]: %s'.format(msg))
         except NameError:
-            sys.stderr.write('aurora plugin [verbose]: %s' % msg)
+            sys.stderr.write('aurora plugin [verbose]: %s'.format(msg))
     else:
         try:
             collectd.info(msg)
