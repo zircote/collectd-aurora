@@ -724,17 +724,20 @@ def get_metric(t):
         if 'sla_' in t[0:4]:
             for k, v in DYNAMIC_STAT_LIST['sla_'].iteritems():
                 if k in t[4:]:
-                    v = Stat('State', (v.type, t))
+                    v = Stat('counter', (v.type, t))
             type_instance = 'sla'
         elif 'tasks_FAILED_' in t:
             v = DYNAMIC_STAT_LIST['tasks_']['tasks_FAILED_']
-            v = Stat('State', (v.type, t))
+            v = Stat('counter', (v.type, t))
+            type_instance = t
         elif 'tasks_LOST_' in t:
             v = DYNAMIC_STAT_LIST['tasks_']['tasks_LOST_']
-            v = Stat('State', (v.type, t))
+            v = Stat('counter', (v.type, t))
+            type_instance = t
         elif 'tasks_lost_rack_' in t:
             v = DYNAMIC_STAT_LIST['tasks_']['tasks_lost_rack_']
-            v = Stat('State', (v.type, t))
+            v = Stat('counter', (v.type, t))
+            type_instance = t
         return v, type_instance
     else:
         return METRICS[t], type_instance
@@ -762,9 +765,8 @@ def dispatch_stat(value, name, type, plugin_instance=None, type_instance=None):
             return
         if not type_instance:
             type_instance = name
-        log_message('%s plugin: sending value[%s]: %s=%s' % (COLLECTD_PLUGIN_NAMESPACE, type, name, value),
-                    verbose=True)
-        val = collectd.Values(plugin=COLLECTD_PLUGIN_NAMESPACE)
+        log_message('%s plugin: sending value[%s]: %s=%s' % (COLLECTD_PLUGIN_NAMESPACE, type, name, value),verbose=True)
+        val = collectd.Values(plugin = COLLECTD_PLUGIN_NAMESPACE)
         val.type = type
         val.type_instance = type_instance
         val.plugin_instance = plugin_instance
@@ -792,14 +794,14 @@ def fetch_info(host, port, path="/vars", scheme="http", username=None, password=
         return None
 
 
-def log_message(msg, verbose=False):
+def log_message(msg, verbose=True):
     if verbose and not VERBOSE_LOGGING:
         return
     elif verbose and VERBOSE_LOGGING:
         try:
-            collectd.info('%s [verbose]: %s'.format(COLLECTD_PLUGIN_NAMESPACE, msg))
+            collectd.info('aurora plugin [verbose]: %s' % msg)
         except NameError:
-            sys.stderr.write('%s [verbose]: %s'.format(COLLECTD_PLUGIN_NAMESPACE, msg))
+            sys.stderr.write('aurora plugin [verbose]: %s' % msg)
     else:
         try:
             collectd.info(msg)
