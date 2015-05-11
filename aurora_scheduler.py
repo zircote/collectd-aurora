@@ -801,9 +801,9 @@ def log_message(msg, verbose=True):
         return
     elif verbose and VERBOSE_LOGGING:
         try:
-            collectd.info('aurora plugin [verbose]: %s'.format(msg))
+            collectd.info('aurora plugin [verbose]: {}'.format(msg))
         except NameError:
-            sys.stderr.write('aurora plugin [verbose]: %s'.format(msg))
+            sys.stderr.write('aurora plugin [verbose]: {}'.format(msg))
     else:
         try:
             collectd.info(msg)
