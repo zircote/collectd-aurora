@@ -12,30 +12,30 @@ An attempt to collect(d) Apache Aurora metrics.
 </LoadPlugin>
 
 <Plugin python>
-  ModulePath "/opt/collectd/lib/collectd/plugins/python"
+  Modulepath "/opt/collectd/lib/collectd/plugins/python"
   Import "aurora_scheduler"
 
   <Module aurora_scheduler>
-    Instance my1
-    Host "my1.aurora.server.com"
-    Port 8081
-    Path /vars
-    Verbose false
+    instance my1
+    host "my1.aurora.server.com"
+    port 8081
+    path /vars
+    verbose false
   </Module>
   <Module aurora_scheduler>
-    Instance my2
-    Host "my2.aurora.server.com"
-    Port 8081
-    Path /vars
-    Verbose false
+    instance my2
+    host "my2.aurora.server.com"
+    port 8081
+    path /vars
+    verbose false
   </Module>
   <Module aurora_scheduler>
-    Instance my3
-    Host "my3.aurora.server.com"
-    Port 8081
-    Ssl = true
-    Path /vars
-    Verbose false
+    instance my3
+    host "my3.aurora.server.com"
+    port 8081
+    ssl = true
+    path /vars
+    verbose false
   </Module>
 </Plugin>
 ```
