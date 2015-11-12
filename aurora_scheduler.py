@@ -703,13 +703,14 @@ def configure_callback(conf):
         elif key == 'ssl':
             scheme = 'https' if bool(node.values[0]) else 'http'
         else:
-            collectd.warning('{} plugin: Unknown config key: {}.'.format(COLLECTD_PLUGIN_NAMESPACE, key))
+            collectd.warning('{0} plugin: Unknown config key: {1}.'.format(COLLECTD_PLUGIN_NAMESPACE, key))
             continue
+
 
     log_message(
         'Configured with host={host}, port={port}, instance name={instance}, using_auth={auth}'.format(
-            host=host, port=port, instance=instance, auth=(username != None)),
-        verbose=True)
+            host=host, port=port, instance=instance, auth=(username != None)
+         ), verbose=True)
 
     CONFIGS.append(
         {'host': host, 'port': port, 'username': username, 'password': password, 'instance': instance, 'path': path,
@@ -762,11 +763,11 @@ def get_metrics(conf):
 def dispatch_stat(value, name, type, plugin_instance=None, type_instance=None):
     try:
         if value is None:
-            collectd.warning('{} plugin: Value not found for {}'.format(COLLECTD_PLUGIN_NAMESPACE, name))
+            collectd.warning('{0} plugin: Value not found for {1}'.format(COLLECTD_PLUGIN_NAMESPACE, name))
             return
         if not type_instance:
             type_instance = name
-        log_message('{} plugin: sending value[{}]: {}={}'.format(COLLECTD_PLUGIN_NAMESPACE, type, name, value),verbose=True)
+        log_message('{0} plugin: sending value[{1}]: {2}={3}'.format(COLLECTD_PLUGIN_NAMESPACE, type, name, value), verbose=True)
         val = collectd.Values(plugin = COLLECTD_PLUGIN_NAMESPACE)
         val.type = type
         val.type_instance = type_instance
@@ -802,10 +803,14 @@ def log_message(msg, verbose=True):
     elif verbose and VERBOSE_LOGGING:
         try:
             collectd.info('aurora plugin [verbose]: {}'.format(msg))
+        except ValueError:
+            collectd.info('aurora plugin [verbose]: ' + msg)
         except NameError:
             sys.stderr.write('aurora plugin [verbose]: {}'.format(msg))
     else:
         try:
+            collectd.info(msg)
+        except ValueError:
             collectd.info(msg)
         except NameError:
             sys.stderr.write(msg)
@@ -829,7 +834,7 @@ def test_parserer():
     ]
     for t in fixture_data:
         metric, type_instance = get_metric(t)
-        assert type(metric) is Stat, "Assertion for metric '{}'".format(metric)
+        assert type(metric) is Stat, "Assertion for metric '{0}'".format(metric)
         if 'sla_' in t[:4]:
             assert type_instance == 'sla'
 
