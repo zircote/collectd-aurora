@@ -724,21 +724,22 @@ def get_metric(t):
         # Todo revisit
         v = None
         if 'sla_' in t[0:4]:
-            for k, v in DYNAMIC_STAT_LIST['sla_'].iteritems():
+            for k, v1 in DYNAMIC_STAT_LIST['sla_'].iteritems():
                 if k in t[4:]:
-                    v = Stat('counter', (v.type, t))
-            type_instance = 'sla'
+                    v = Stat(v1.type, t.replace(k, v1.name))
+                    t1 = t.replace(k, v1.name)
+            type_instance = t1
         elif 'tasks_FAILED_' in t:
             v = DYNAMIC_STAT_LIST['tasks_']['tasks_FAILED_']
-            v = Stat('counter', (v.type, t))
+            v = Stat(v.type, t)
             type_instance = t
         elif 'tasks_LOST_' in t:
             v = DYNAMIC_STAT_LIST['tasks_']['tasks_LOST_']
-            v = Stat('counter', (v.type, t))
+            v = Stat(v.type, t)
             type_instance = t
         elif 'tasks_lost_rack_' in t:
             v = DYNAMIC_STAT_LIST['tasks_']['tasks_lost_rack_']
-            v = Stat('counter', (v.type, t))
+            v = Stat(v.type, t)
             type_instance = t
         return v, type_instance
     else:
